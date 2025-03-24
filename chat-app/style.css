@@ -1,0 +1,111 @@
+* {
+	box-sizing: border-box;
+	padding: 0;
+	margin: 0;
+	font-family: "Rubik", sans-serif;
+	line-height:1;
+	/*border: 0.5px black solid;*/
+	/* outline: 2px solid black;  */
+	
+}
+img {
+	display: flex;
+
+	object-fit: contain;
+}
+body{
+    background-color: #929bbb;
+    height: 100dvh;
+    display: flex;
+    align-items: center;
+
+}
+.container {
+    margin: 0 auto;
+	display: flex;
+	width: 60dvw;
+	height: 90dvh;
+    align-content: center;
+	background-color: #3a4259;
+	justify-content: center;
+	align-items: center;
+flex-direction: column;
+background-image:url(misc/background.jpg);
+background-repeat: no-repeat;
+background-size: cover;
+
+}
+.name-section{
+    flex-basis: 10%;
+align-content: center;
+color: white;
+}
+.chat-box{
+    display: flex;
+    flex-grow: 1;    
+    width: 90%;
+    padding: 1rem;
+    border: 2px solid black;
+    margin-top: 1em;
+    margin-bottom: 0.5em;
+    align-items: end;
+    flex-direction: column;
+    justify-content: safe flex-end;
+    gap: 8px;
+    overflow-y: scroll;  
+    
+    
+}
+.header{
+    color: white;
+    margin-top: 8px;
+}
+.message-input{
+    display: flex;
+    width: 90%;
+    gap: 1em;
+    margin-bottom: 8px;
+}
+#message-input{
+    flex-grow: 1;
+    background-color: #282b30;
+    border: 0px;
+    color: white;
+}
+button {
+    padding: 10px 15px;
+    background-color: #007bff;
+    color: #fff;
+    border: none;
+    cursor: pointer;
+}
+button:hover {
+    background-color: #0056b3;
+}
+.kendi-mesaj{
+align-self: flex-end;
+color: white;
+background-color:  	#7289da;
+padding: 1rem;
+border-radius: 8px;
+outline: 1px solid black;
+max-width: 100%;
+word-break: break-all;
+min-height: fit-content;
+
+
+
+}
+.baska-mesaj{
+    align-self: flex-start;
+    color: white;
+    background-color: #282b30;
+    padding: 1rem;
+    border-radius: 8px;
+    outline: 1px solid black;
+    word-break: break-all;
+    max-width: 100%;
+}
+#connection-status{
+    margin-bottom: 10px;
+}

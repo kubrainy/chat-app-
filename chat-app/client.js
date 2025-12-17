@@ -1,36 +1,40 @@
-let userName = ''; 
-let socket; 
+let userName = '';
+let socket;
 
 document.addEventListener('DOMContentLoaded', () => {
-  connectToServer(); 
+  connectToServer();
 });
 
+function getWebSocketUrl() {
+  const wsProtocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+  return `${wsProtocol}//${window.location.host}`;
+}
+
 function connectToServer() {
-  socket = new WebSocket('ws://127.0.0.1:8080');
+  socket = new WebSocket(getWebSocketUrl());
 
   socket.onopen = () => {
     console.log('WebSocket bağlantısı kuruldu.');
-    updateConnectionStatus(true); 
+    updateConnectionStatus(true);
   };
 
   socket.onmessage = (event) => {
-    const chatBox = document.getElementById('chat-box');
     const message = event.data;
 
     if (message instanceof Blob) {
       const reader = new FileReader();
       reader.onload = function () {
-        displayMessage(reader.result, false); 
+        displayMessage(reader.result, false);
       };
       reader.readAsText(message);
     } else {
-      displayMessage(message, false); 
+      displayMessage(message, false);
     }
   };
 
   socket.onclose = () => {
     console.log('WebSocket bağlantısı kapandı.');
-    updateConnectionStatus(false); 
+    updateConnectionStatus(false);
   };
 
   socket.onerror = (error) => {
@@ -53,36 +57,35 @@ function setName() {
 function sendMessage() {
   const input = document.getElementById('message-input');
   const message = input.value;
-  if (message) {
+
+  if (message && socket && socket.readyState === WebSocket.OPEN) {
     const fullMessage = `${userName}: ${message}`;
     socket.send(fullMessage);
 
     displayMessage(fullMessage, true);
-    input.value = ''; 
+    input.value = '';
   }
 }
 
 function displayMessage(message, isOwnMessage) {
   const chatBox = document.getElementById('chat-box');
-  const userPara = document.createElement("p");
-  userPara.classList.add(isOwnMessage ? "kendi-mesaj" : "baska-mesaj");
+  const userPara = document.createElement('p');
+  userPara.classList.add(isOwnMessage ? 'kendi-mesaj' : 'baska-mesaj');
   userPara.textContent = message;
   chatBox.appendChild(userPara);
   chatBox.scrollTop = chatBox.scrollHeight;
 }
 
-
 function disconnect() {
-  if (socket.readyState === WebSocket.OPEN) {
+  if (socket && socket.readyState === WebSocket.OPEN) {
     const message = `${userName} bağlantıyı kesti.`;
     socket.send(message);
-    
+
     displayMessage('Bağlantınızı kestiniz.', true);
 
-    socket.close(); 
+    socket.close();
 
     document.getElementById('reconnect-button').style.display = 'block';
-
     document.getElementById('disconnect-button').style.display = 'none';
   }
 }
@@ -90,7 +93,7 @@ function disconnect() {
 function reconnect() {
   connectToServer();
   document.getElementById('reconnect-button').style.display = 'none';
-  document.getElementById('disconnect-button').style.display = 'block'; 
+  document.getElementById('disconnect-button').style.display = 'block';
   document.getElementById('disconnect-button').disabled = false;
 }
 
@@ -105,3 +108,4 @@ function updateConnectionStatus(isConnected) {
     document.getElementById('disconnect-button').disabled = true;
   }
 }
+

@@ -1,26 +1,47 @@
 const WebSocket = require('ws');
-const wss = new WebSocket.Server({ port: 8080 });
+const http = require('http');
+const fs = require('fs');
+const path = require('path');
 
-const clients = [];  // Tüm istemcileri saklayacak dizi
+const PORT = process.env.PORT || 8080;
 
-wss.on('connection', (ws) => {
-  console.log('Bir istemci bağlandı.');
-  clients.push(ws);
-  ws.on('message', (message) => {
-    console.log('Alınan mesaj: ' + message);
-    clients.forEach((client) => {
-      if (client !== ws && client.readyState === WebSocket.OPEN) {
-        client.send(message);  // Diğer istemcilere mesajı ilet
-      }
-    });
-  });
-  ws.on('close', () => {
-    console.log('Bir istemci bağlantıyı kapattı.');
-    const index = clients.indexOf(ws);
-    if (index !== -1) {
-      clients.splice(index, 1);
+const server = http.createServer((req, res) => {
+  const filePath = path.join(__dirname, 'index.html');
+
+  fs.readFile(filePath, (err, content) => {
+    if (err) {
+      res.writeHead(500);
+      res.end('Server Error');
+      return;
     }
+    res.writeHead(200, { 'Content-Type': 'text/html; charset=utf-8' });
+    res.end(content);
   });
 });
 
-console.log('WebSocket sunucusu başlatıldı: ws://127.0.0.1:8080');
+const wss = new WebSocket.Server({ server });
+
+const clients = [];
+
+wss.on('connection', (ws) => {
+  clients.push(ws);
+
+  ws.on('message', (message) => {
+    for (const client of clients) {
+      if (client !== ws && client.readyState === WebSocket.OPEN) {
+        client.send(message.toString());
+      }
+    }
+  });
+
+  ws.on('close', () => {
+    const idx = clients.indexOf(ws);
+    if (idx !== -1) clients.splice(idx, 1);
+  });
+});
+
+server.listen(PORT, () => {
+  console.log(`HTTP: http://localhost:${PORT}`);
+  console.log(`WS  : ws://localhost:${PORT}`);
+});
+

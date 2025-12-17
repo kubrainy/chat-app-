@@ -13,7 +13,7 @@
 			<div class="name-section" id="name-section">
 				<label for="name-input">Adınızı girin:</label>
 				<input type="text" id="name-input" placeholder="Adınızı girin..." />
-				<button onclick="setName()">Tamam</button>
+				<button class="btn primary" onclick="setName()">Tamam</button>
 			</div>
 			<div class="chat-box" id="chat-box"></div>
 			<div class="connection-status">
@@ -21,11 +21,12 @@
 			</div>
 			<div class="message-input">
 				<input type="text" id="message-input" placeholder="Mesajınızı yazın..." disabled />
-				<button id="send-button" onclick="sendMessage()" disabled>Gönder</button>
-				<button id="disconnect-button" onclick="disconnect()" disabled>
-					Bağlantıyı Kes
-				</button>
-				<button id="reconnect-button" onclick="reconnect()" style="display: none">
+				<button id="send-button" class="btn primary" onclick="sendMessage()" disabled>Gönder</button>
+				<button id="disconnect-button" class="btn danger" onclick="disconnect()" disabled>
+                 Bağlantıyı Kes
+                </button>
+
+				<button id="reconnect-button" class="btn success" onclick="reconnect()" style="display: none">
 					Tekrar Bağlan
 				</button>
 			</div>

@@ -50,3 +50,10 @@ http://localhost:8080
 - `style.css` – Stil dosyası
 - `package.json` – Proje bağımlılıkları
 - `README.md` – Dokümantasyon
+---
+
+## 🔗 Live Demo
+👉 https://chat.kubrainy.me/
+
+> Gerçek zamanlı WebSocket tabanlı sohbet uygulaması.  
+> Birden fazla kullanıcı aynı anda mesajlaşabilir.

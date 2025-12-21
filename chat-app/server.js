@@ -4,24 +4,49 @@ const fs = require('fs');
 const path = require('path');
 
 const PORT = process.env.PORT || 8080;
-
-const publicDir = path.join(__dirname);
+const publicDir = __dirname;
 
 function serveFile(res, filePath, contentType) {
   fs.readFile(filePath, (err, content) => {
     if (err) {
-      res.writeHead(404, { 'Content-Type': 'text/plain' });
+      res.writeHead(404, { 'Content-Type': 'text/plain; charset=utf-8' });
       res.end('Not Found');
       return;
     }
-    res.writeHead(200, { 'Content-Type': contentType });
+
+    res.writeHead(200, {
+      'Content-Type': contentType,
+      'Cache-Control': 'no-store',
+    });
     res.end(content);
   });
 }
 
 const server = http.createServer((req, res) => {
-  const urlPath = req.url === '/' ? '/index.html' : req.url;
-  const filePath = path.join(publicDir, urlPath);
+  const reqUrl = new URL(req.url || '/', `http://${req.headers.host || 'localhost'}`);
+  const pathname = reqUrl.pathname;
+
+  if (pathname === '/favicon.ico') {
+    const candidates = [
+      path.join(publicDir, 'favicon.ico'),
+      path.join(publicDir, 'images', 'favicon.ico'),
+    ];
+
+    const iconPath = candidates.find((p) => fs.existsSync(p));
+    if (!iconPath) {
+      res.writeHead(404, { 'Content-Type': 'text/plain; charset=utf-8' });
+      res.end('favicon not found');
+      return;
+    }
+
+    serveFile(res, iconPath, 'image/x-icon');
+    return;
+  }
+
+  const urlPath = pathname === '/' ? '/index.html' : pathname;
+
+  const safePath = path.normalize(urlPath).replace(/^(\.\.[\/\\])+/, '');
+  const filePath = path.join(publicDir, safePath);
 
   const ext = path.extname(filePath).toLowerCase();
   const types = {
@@ -30,7 +55,7 @@ const server = http.createServer((req, res) => {
     '.css': 'text/css; charset=utf-8',
     '.ico': 'image/x-icon',
     '.png': 'image/png',
-    '.svg': 'image/svg+xml',
+    '.svg': 'image/svg+xml; charset=utf-8',
   };
 
   const contentType = types[ext] || 'application/octet-stream';
@@ -58,6 +83,6 @@ wss.on('connection', (ws) => {
 });
 
 server.listen(PORT, '0.0.0.0', () => {
-  console.log(`Server running on port ${PORT}`);
+  console.log(`HTTP : http://localhost:${PORT}`);
+  console.log(`WS   : ws://localhost:${PORT}`);
 });
-

@@ -5,10 +5,12 @@ const path = require('path');
 
 const PORT = process.env.PORT || 8080;
 
+const publicDir = path.join(__dirname);
+
 function serveFile(res, filePath, contentType) {
   fs.readFile(filePath, (err, content) => {
     if (err) {
-      res.writeHead(404);
+      res.writeHead(404, { 'Content-Type': 'text/plain' });
       res.end('Not Found');
       return;
     }
@@ -19,7 +21,7 @@ function serveFile(res, filePath, contentType) {
 
 const server = http.createServer((req, res) => {
   const urlPath = req.url === '/' ? '/index.html' : req.url;
-  const filePath = path.join(__dirname, urlPath);
+  const filePath = path.join(publicDir, urlPath);
 
   const ext = path.extname(filePath).toLowerCase();
   const types = {
@@ -28,9 +30,7 @@ const server = http.createServer((req, res) => {
     '.css': 'text/css; charset=utf-8',
     '.ico': 'image/x-icon',
     '.png': 'image/png',
-    '.jpg': 'image/jpeg',
-    '.jpeg': 'image/jpeg',
-    '.svg': 'image/svg+xml; charset=utf-8',
+    '.svg': 'image/svg+xml',
   };
 
   const contentType = types[ext] || 'application/octet-stream';
@@ -52,13 +52,12 @@ wss.on('connection', (ws) => {
   });
 
   ws.on('close', () => {
-    const idx = clients.indexOf(ws);
-    if (idx !== -1) clients.splice(idx, 1);
+    const i = clients.indexOf(ws);
+    if (i !== -1) clients.splice(i, 1);
   });
 });
 
 server.listen(PORT, '0.0.0.0', () => {
   console.log(`Server running on port ${PORT}`);
 });
-
 

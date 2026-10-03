@@ -97,6 +97,13 @@ input[type="text"]::placeholder{ color: rgba(255,255,255,.40); }
   background-clip:content-box;
 }
 
+.typing-indicator{
+  min-height:18px;
+  font-size:13px;
+  font-style:italic;
+  color:var(--muted);
+}
+
 .connection-status #connection-status{
   margin: 2px 0 0;
   font-weight:600;
@@ -127,6 +134,17 @@ input[type="text"]::placeholder{ color: rgba(255,255,255,.40); }
   align-self:flex-start;
   background: rgba(255,255,255,.06);
 }
+
+.mesaj-isim{
+  display:block;
+  margin-bottom:4px;
+  font-size:12px;
+  font-weight:700;
+  letter-spacing:.3px;
+  color:#67e8f9;
+}
+.kendi-mesaj .mesaj-isim{ color:#c4b5fd; text-align:left; }
+.mesaj-metin{ display:block; }
 
 .btn{
   height:44px;

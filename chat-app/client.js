@@ -3,6 +3,16 @@ let socket;
 
 document.addEventListener('DOMContentLoaded', () => {
   connectToServer();
+
+  document.getElementById('message-input').addEventListener('keydown', (e) => {
+    if (e.key === 'Enter') sendMessage();
+  });
+
+  document.getElementById('message-input').addEventListener('input', sendTyping);
+
+  document.getElementById('name-input').addEventListener('keydown', (e) => {
+    if (e.key === 'Enter') setName();
+  });
 });
 
 function getWebSocketUrl() {
@@ -19,17 +29,7 @@ function connectToServer() {
   };
 
   socket.onmessage = (event) => {
-    const message = event.data;
-
-    if (message instanceof Blob) {
-      const reader = new FileReader();
-      reader.onload = function () {
-        displayMessage(reader.result, false);
-      };
-      reader.readAsText(message);
-    } else {
-      displayMessage(message, false);
-    }
+    handleIncoming(event.data);
   };
 
   socket.onclose = () => {
@@ -40,6 +40,61 @@ function connectToServer() {
   socket.onerror = (error) => {
     console.log('WebSocket hatası:', error);
   };
+}
+
+function handleIncoming(raw) {
+  let data;
+  try {
+    data = JSON.parse(raw);
+  } catch (e) {
+    data = { text: String(raw) };
+  }
+  if (data.type === 'typing') {
+    showTyping(data.name);
+    return;
+  }
+
+  if (data.name) clearTyping(data.name);
+  displayMessage(data.text, false, data.name);
+}
+
+const TYPING_SEND_INTERVAL = 2000;
+const TYPING_TIMEOUT = 3000;
+let lastTypingSent = 0;
+const typingUsers = new Map();
+
+function sendTyping() {
+  const now = Date.now();
+  if (!userName || now - lastTypingSent < TYPING_SEND_INTERVAL) return;
+  if (socket && socket.readyState === WebSocket.OPEN) {
+    socket.send(JSON.stringify({ type: 'typing', name: userName }));
+    lastTypingSent = now;
+  }
+}
+
+function showTyping(name) {
+  if (!name) return;
+  clearTimeout(typingUsers.get(name));
+  typingUsers.set(name, setTimeout(() => clearTyping(name), TYPING_TIMEOUT));
+  renderTyping();
+}
+
+function clearTyping(name) {
+  clearTimeout(typingUsers.get(name));
+  typingUsers.delete(name);
+  renderTyping();
+}
+
+function renderTyping() {
+  const names = [...typingUsers.keys()];
+  const el = document.getElementById('typing-indicator');
+  if (names.length === 0) {
+    el.textContent = '';
+  } else if (names.length === 1) {
+    el.textContent = `${names[0]} yazıyor...`;
+  } else {
+    el.textContent = `${names.join(', ')} yazıyor...`;
+  }
 }
 
 function setName() {
@@ -59,27 +114,37 @@ function sendMessage() {
   const message = input.value;
 
   if (message && socket && socket.readyState === WebSocket.OPEN) {
-    const fullMessage = `${userName}: ${message}`;
-    socket.send(fullMessage);
+    socket.send(JSON.stringify({ name: userName, text: message }));
 
-    displayMessage(fullMessage, true);
+    displayMessage(message, true, userName);
     input.value = '';
+    lastTypingSent = 0;
   }
 }
 
-function displayMessage(message, isOwnMessage) {
+function displayMessage(message, isOwnMessage, name) {
   const chatBox = document.getElementById('chat-box');
-  const userPara = document.createElement('p');
+  const userPara = document.createElement('div');
   userPara.classList.add(isOwnMessage ? 'kendi-mesaj' : 'baska-mesaj');
-  userPara.textContent = message;
+
+  if (name) {
+    const nameEl = document.createElement('span');
+    nameEl.classList.add('mesaj-isim');
+    nameEl.textContent = name;
+    userPara.appendChild(nameEl);
+  }
+
+  const textEl = document.createElement('span');
+  textEl.classList.add('mesaj-metin');
+  textEl.textContent = message;
+  userPara.appendChild(textEl);
   chatBox.appendChild(userPara);
   chatBox.scrollTop = chatBox.scrollHeight;
 }
 
 function disconnect() {
   if (socket && socket.readyState === WebSocket.OPEN) {
-    const message = `${userName} bağlantıyı kesti.`;
-    socket.send(message);
+    socket.send(JSON.stringify({ text: `${userName} bağlantıyı kesti.` }));
 
     displayMessage('Bağlantınızı kestiniz.', true);
 
